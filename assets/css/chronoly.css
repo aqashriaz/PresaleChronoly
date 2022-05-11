@@ -1,0 +1,126 @@
+.page-ath-gfx {
+    /* background: url(../images/ath-gfx.png) #0D2239 no-repeat; */
+    background-color: #0D2239 !important;
+}
+
+.page-ath-heading {
+    color: #0D2239 !important;
+}
+
+a {
+    color: #577A97 !important;
+}
+
+a:link, a:visited {
+    color: #577A97 !important;
+}
+
+a:hover {
+    opacity: .9;
+}
+
+.btn-primary {
+    background: #0D2239 !important;
+    border-color: #0D2239 !important;
+    color: #ffffff !important;
+}
+
+a.btn-primary {
+    color: #ffffff !important;
+}
+
+a.btn-danger {
+    color: #ffffff !important;
+}
+
+.btn-success {
+    background: #366547 !important;
+    border-color: #366547 !important;
+    color: #ffffff !important;
+}
+
+a.btn-success {
+    color: #ffffff !important;
+}
+
+.badge-success {
+    background: #366547 !important;
+    border-color: #366547 !important;
+}
+
+.topbar {
+    background: #0D2239 !important;
+}
+
+.card-token {
+    background-image: linear-gradient(45deg, #0D2239 0%, #295077 100%);
+}
+
+.user-thumb {
+    background: #0D2239 !important;
+}
+
+.user-status {
+    background: #0D2239 !important;
+}
+.user-dropdown:after {
+    border-bottom-color: #0D2239 !important;
+}
+
+.data-head .data-col {
+    color: #0D2239 !important;
+}
+
+.input-checkbox ~ label:not(.error):after {
+    background: #0D2239 !important;
+}
+
+/* .navbar-btns li em, 
+.navbar-btns li span {
+    color: #ffffff !important;
+} */
+
+.badge-success {
+    color: #ffffff !important;
+}
+
+.navbar-btns li span.badge-success em,
+.navbar-btns li span.badge-success span {
+    color: #ffffff !important;
+}
+
+.input-switch:checked ~ label:before {
+    background: #577A97;
+}
+
+.text-success {
+    color: #366547 !important;
+}
+
+.total-amount-lead {
+    color:#577A97;
+}
+
+.navbar-menu>li>a:before {
+ background: #577A97;   
+}
+
+.navbar-menu>li>a:hover:before {
+    background: #577A97;   
+}
+
+.select2-results__option[aria-selected] {
+    background-color: white !important;
+    color: rgba(73,84,99,0.7) !important;
+}
+
+/* Remove number input arrows Chrome, Safari, Edge, Opera */
+#amountInUSD::-webkit-outer-spin-button,
+#amountInUSD::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
