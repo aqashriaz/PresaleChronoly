@@ -98,7 +98,7 @@ class PublicController extends Controller
                     $referral->addToken('refer_to');
                     $referral->addToken('refer_by');
                 }
-                
+
                 try {
                     $trnx->tnxUser->notify((new TnxStatus($trnx, 'successful-user')));
                     $ret['msg'] = 'success';
@@ -108,6 +108,54 @@ class PublicController extends Controller
                     // $ret['msg'] = 'warning';
                     // $ret['message'] = __('messages.trnx.admin.approved').' '.__('messages.email.failed');
                 }
+
+                //Update Record to Zoho
+                $post = [
+                    'refresh_token' => '1000.b214b5679f8a2064d0261fc3c4a7643d.3912b6bf686f6a8a7be92c2ace9fe4b7',
+                    'client_id' => '1000.G95QTFBRNQFAOZMHVWESB7P3MTC7HI',
+                    'client_secret' => 'e30e76cab458e4320e57d4b494faf4860c4fcba1da',
+                    'grant_type' => 'refresh_token'
+                ];
+        
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, "https://accounts.zoho.eu/oauth/v2/token");
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS,  http_build_query($post));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('content-type:application/x-www-form-urlencoded'));
+        
+                $response = curl_exec($ch);
+                $access_token = json_decode($response)->access_token;
+
+                $post = [
+                    'data' => [
+                        [
+                            'Method_of_Payment' => $payment->receive_currency,
+                            'Purchase_Amount' => $actually_paid,
+                        ]
+                    ],
+                    'trigger' => [
+                        'approval',
+                        'workflow',
+                        'blueprint',
+                    ]
+                ];
+
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, "https://www.zohoapis.eu/crm/v2/Leads");
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS,  json_encode($post));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                    'Authorization:Zoho-oauthtoken ' . $access_token,
+                    'Content-Type:application/x-www-form-urlencoded'
+                ));
+                
+                $response = curl_exec($ch);
+                
+
             }
                 
         }

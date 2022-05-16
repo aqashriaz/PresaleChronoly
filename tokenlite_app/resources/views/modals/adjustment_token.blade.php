@@ -48,8 +48,8 @@
     var adjust_form = $('#adjust_token_cal'), receive_amount = $('#receive_amount'), adjust_token = $('#total_tokens'), $chk = adjust_form.find('.chk_adjust'),
         rec_amount = adjust_form.find(receive_amount).val();
     $('#adjustment').find('.tnx-action').data('_amount',rec_amount);
-
-    adjust_form.find(":input").bind('keyup change', function() {
+    
+    adjust_form.find(":input").bind('keyup input change', function() {
 
         var rec_amount = adjust_form.find(receive_amount).val(),
         adj_token = adjust_form.find(adjust_token).val(),
@@ -60,11 +60,43 @@
         bonus_on_token = {!! $trnx->bonus_on_token !!},
         old_amount = {!! $trnx->total_tokens !!} - bonus_on_token -bonus_on_base,
         all_currency_rate = {!! $trnx->all_currency_rate !!};
+
+        if(currency == "BNBBSC")
+        {
+            currency = "BNB"
+        }
+
+        if(currency == "USDTTRC20" || currency == "USDTERC20")
+        {
+            usdPrice = 1 * rec_amount
+            baseTokens = Math.round(usdPrice * 100)
+            tBonus = Math.round((30 / 100) * baseTokens);
+            totalTokens = baseTokens + tBonus
+        }
+        else
+        {
+            $prcURL = 'https://api.binance.com/api/v3/ticker/price?symbol=' + currency.toUpperCase() + 'USDT';
+            fetch($prcURL)
+            .then(response => response.json())
+            .then(data => updatePrice(data.price));
+            
+            function updatePrice(exchPrice){
+                usdPrice = exchPrice * rec_amount
+                baseTokens = Math.round(usdPrice * 100)
+                tBonus = Math.round((30 / 100) * baseTokens);
+                totalTokens = baseTokens + tBonus
+            }
+        }
         
-        $_token = parseInt(rec_amount / currency_rate);
-        _base_bonus = parseInt((bonus_on_base / old_amount )*$_token); 
-        _token_bonus = parseInt((bonus_on_token / old_amount )*$_token); 
-        $_adjusted = $_token+ _base_bonus + _token_bonus;
+
+        // $_token = parseInt(rec_amount / currency_rate);
+        // _base_bonus = parseInt((bonus_on_base / old_amount )*$_token); 
+        // _token_bonus = parseInt((bonus_on_token / old_amount )*$_token); 
+        // $_adjusted = $_token+ _base_bonus + _token_bonus;
+        $_token = baseTokens;
+        _base_bonus = tBonus;
+        _token_bonus = 0; 
+        $_adjusted = $_token + _base_bonus + _token_bonus;
         adjust_token.val($_adjusted);
 
         if(rec_amount <=0){
