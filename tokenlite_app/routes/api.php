@@ -18,8 +18,15 @@ Route::get('/stage/full', 'APIController@stage_full')->name('stage.full');
 
 Route::get('/bonus', 'APIController@bonuses')->name('bonus');
 Route::get('/price', 'APIController@prices')->name('price');
-
 Route::post('/nowpayments/confirm/payment', 'PublicController@nowpaymentsConfirmPayment');
+
+Route::post('/nowpayments/confirm/payment/via', 'PublicController@nowpaymentsConfirmPaymentVia');
+
+Route::post('/nowpayments/confirm/test/payment', 'PublicController@confirmTestPayment');
+Route::post('/test-api-call', 'PublicController@createTestLead');
+Route::post('/test-api-call-check', 'PublicController@checkApiCall');
+Route::get('/generate-test-order', 'PublicController@generateTestOrder');
+
 
 Route::any('/{any?}', function() {
     throw new App\Exceptions\APIException("Enter a valid endpoint", 400);

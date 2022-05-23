@@ -68,7 +68,8 @@ class TransactionController extends Controller
         $gateway = PaymentMethod::all()->pluck('payment_method');
         $stages = IcoStage::whereNotIn('status', ['deleted'])->get();
         $pm_currency = PaymentMethod::Currency;
-        $users = User::where('status', 'active')->whereNotNull('email_verified_at')->where('role', '!=', 'admin')->get();
+        //$users = User::where('status', 'active')->whereNotNull('email_verified_at')->where('role', '!=', 'admin')->get();
+        $users = User::where('status', 'active')->where('role', '!=', 'admin')->get();
         $pagi = $trnxs->appends(request()->all());
         return view('admin.transactions', compact('trnxs', 'users', 'stages', 'pmethods', 'pm_currency', 'gateway', 'is_page', 'pagi'));
     }
@@ -576,6 +577,59 @@ class TransactionController extends Controller
         $ret['msg'] = $verify ? 'success' : 'info';
         $ret['message'] = $verify ? __('Transaction status updated successfully.') : __('Payment has not approved yet for this transaction. You may cancel this transaction.');
         return back()->with([$ret['msg'] => $ret['message']]);
+    }
+
+    // Auto approve transactions
+    public function approveTransactionsAuto()
+    {
+        $transactions = Transaction::where('status', 'pending')->first();
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+        CURLOPT_URL => 'https://api.nowpayments.io/v1/payment/' . $transaction->tnx_id,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'GET',
+        CURLOPT_HTTPHEADER => array(
+            'x-api-key: MGR8GQP-66VMMS8-J8XMH3D-W031HD7'
+        ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $response = json_decode($response, true);
+
+        return response()->json([
+            'res' => $response['status']
+        ]);
+
+        $finished = 0;
+        $expired = 0;
+
+        foreach ($transactions as $transaction ) {
+            
+
+            
+
+            if ($response['status'] == 'finished') {
+                $finished++;
+            }
+            elseif($response['status'] == 'expired') {
+                $expired++;
+            }
+  
+        }
+        
+        return response()->json([
+            'res' => "finished:" . $finished . ", expired: " . $expired,
+        ]);
+        
     }
 
 }

@@ -164,7 +164,7 @@ $decimal_max = (token('decimal_max')) ? token('decimal_max') : 0;
                     $b_amt_bar = '';
                     if(!empty($bonus_amount)){
                         foreach($bonus_amount as $token => $bt_amt){
-                            $_b = (50 / count($bonus_amount) );
+                            $_b = (100 / count($bonus_amount) );
                             $b_amt_bar .= ($bt_amt > 0 && $token > 0) ? '<div class="bonus-extra-item bonus-tire-'. $bt_amt .'" data-percent="'. round($_b, 0).'"><span class="bonus-extra-amount">'. $token .' '. $symbol .'</span><span class="bonus-extra-percent">'.$bt_amt.'%</span></div>' : '';
                         }
                     }
@@ -344,8 +344,8 @@ $decimal_max = (token('decimal_max')) ? token('decimal_max') : 0;
             var crno = $("#showCRNO");
             var totalAmountPurchased = $("#totalAmountPurchased");
 
-            crno.html(usd*50);
-            totalAmountPurchased.html(usd*50);
+            crno.html(usd*100);
+            totalAmountPurchased.html(usd*100);
             
             var cryp = $("#getCrypto").html();
            

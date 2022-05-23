@@ -33,6 +33,11 @@ class PublicController extends Controller
 {
     public function nowpaymentsConfirmPayment(Request $request)
     {
+
+        $check = Transaction::where('tnx_id', '5431933795')->first();
+        $check->update([
+            'extra' => 'changed from real callback',
+        ]);
             
         $error_msg = "Unknown error";
         $auth_ok = false;
@@ -47,7 +52,7 @@ class PublicController extends Controller
             $sorted_request_json = json_encode($request_data, JSON_UNESCAPED_SLASHES);
 
             if ($request_json !== false && !empty($request_json)) {
-                $hmac = hash_hmac("sha512", $sorted_request_json, trim("Yh9hUI7RYK34Q6FvTcYDs9IP7STwNfKC"));
+                $hmac = hash_hmac("sha512", $sorted_request_json, trim("0JJal6KKpkAwMqKYGRgRD2GraBF3JPic"));
 
                 if ($hmac == $recived_hmac) {
                     $auth_ok = true;
@@ -70,12 +75,13 @@ class PublicController extends Controller
             $paymentStatus = $response['payment_status'];
             $pay_amount = $response['pay_amount'];
             $actually_paid = $response['actually_paid'];
+            $pay_currency = $response['pay_currency'];
             
             $paymentId = rtrim($paymentId, ".");
 
             $payment = Transaction::where('tnx_id', $paymentId)->first();
             $payment->update([
-                'extra' => $paymentStatus,
+                'extra' => $paymentStatus . '-nowpaments api',
             ]);
             
             $adminUser = User::where('role', 'admin')->first();
@@ -87,7 +93,6 @@ class PublicController extends Controller
                     'status' => 'approved',
                     'checked_by' => json_encode(['name'=>$adminUserName, 'id'=>$adminUserId]),
                     'checked_time' => Carbon::now()->toDateTimeString(),
-                    
                 ]);
                 
                 $trnx = $payment;
@@ -109,58 +114,326 @@ class PublicController extends Controller
                     // $ret['message'] = __('messages.trnx.admin.approved').' '.__('messages.email.failed');
                 }
 
-                //Update Record to Zoho
-                $post = [
-                    'refresh_token' => '1000.b214b5679f8a2064d0261fc3c4a7643d.3912b6bf686f6a8a7be92c2ace9fe4b7',
-                    'client_id' => '1000.G95QTFBRNQFAOZMHVWESB7P3MTC7HI',
-                    'client_secret' => 'e30e76cab458e4320e57d4b494faf4860c4fcba1da',
-                    'grant_type' => 'refresh_token'
-                ];
-        
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, "https://accounts.zoho.eu/oauth/v2/token");
-                curl_setopt($ch, CURLOPT_POST, 1);
-                curl_setopt($ch, CURLOPT_POSTFIELDS,  http_build_query($post));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array('content-type:application/x-www-form-urlencoded'));
-        
-                $response = curl_exec($ch);
-                $access_token = json_decode($response)->access_token;
-
-                $post = [
-                    'data' => [
-                        [
-                            'Method_of_Payment' => $payment->receive_currency,
-                            'Purchase_Amount' => $actually_paid,
-                        ]
-                    ],
-                    'trigger' => [
-                        'approval',
-                        'workflow',
-                        'blueprint',
-                    ]
-                ];
-
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, "https://www.zohoapis.eu/crm/v2/Leads");
-                curl_setopt($ch, CURLOPT_POST, 1);
-                curl_setopt($ch, CURLOPT_POSTFIELDS,  json_encode($post));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                    'Authorization:Zoho-oauthtoken ' . $access_token,
-                    'Content-Type:application/x-www-form-urlencoded'
-                ));
-                
-                $response = curl_exec($ch);
-                
-
+                // $userId = $trnx->user;
+                // $access_token = $this->getAccessToken();
+                // $getUser = User::whereId($userId)->first();
+                // $zohoLeadsId = $getUser->zohoLeadsId;
+                // if(!is_null($zohoLeadsId))
+                // {
+                //     $post = [
+                //         'data' => [
+                //             [
+                //                 'Method_of_Payment' => $pay_currency,
+                //                 'Purchase_Amount' => strval($actually_paid),
+                //                 'id' => $zohoLeadsId
+                //             ]
+                //         ]
+                //     ];
+            
+                //     $ch = curl_init();
+                //     curl_setopt($ch, CURLOPT_URL, "https://www.zohoapis.eu/crm/v2/Leads");
+                //     curl_setopt($ch, CURLOPT_POSTFIELDS,  json_encode($post));
+                //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                //     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+                //     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                //     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                //         'Authorization:Zoho-oauthtoken ' . $access_token,
+                //         'Content-Type:application/x-www-form-urlencoded'
+                //     ));
+            
+            
+                //     $response = curl_exec($ch);
+            
+                // }
+            
             }
                 
         }
     }
+
+    public function nowpaymentsConfirmPaymentVia($response)
+    {
+        $response = json_decode($response, true);
+
+        $check = Transaction::where('tnx_id', '5431933795')->first();
+        $check->update([
+            'extra' => $response['status'],
+        ]);
+
+    }
+
+
+    public function confirmTestPayment(Request $request)
+    {
+        
+        $error_msg = "Unknown error";
+        $auth_ok = false;
+        $request_data = null;
+
+        if (isset($_SERVER['HTTP_X_NOWPAYMENTS_SIG']) && !empty($_SERVER['HTTP_X_NOWPAYMENTS_SIG'])) {
+            $recived_hmac = $_SERVER['HTTP_X_NOWPAYMENTS_SIG'];
+
+            $request_json = file_get_contents('php://input');
+            $request_data = json_decode($request_json, true);
+            ksort($request_data);
+            $sorted_request_json = json_encode($request_data, JSON_UNESCAPED_SLASHES);
+
+            if ($request_json !== false && !empty($request_json)) {
+                $hmac = hash_hmac("sha512", $sorted_request_json, trim("NCxii6E+PBx11UDCH7Tn+5Zwx/kKpxwQ"));
+
+                if ($hmac == $recived_hmac) {
+                    $auth_ok = true;
+                } else {
+                    $error_msg = 'HMAC signature does not match';
+                }
+            } else {
+                $error_msg = 'Error reading POST data';
+            }
+        } else {
+            $error_msg = 'No HMAC signature sent.';
+        }
+
+        if ($auth_ok = true) {
+            
+            $data = file_get_contents('php://input');
+            $response = json_decode($data, true);
+
+            $paymentId = $response['payment_id'] . '.';
+            $paymentStatus = $response['payment_status'];
+            $pay_amount = $response['pay_amount'];
+            $actually_paid = $response['actually_paid'];
+            $pay_currency = $response['pay_currency'];
+            
+            $paymentId = rtrim($paymentId, ".");
+
+            $payment = Transaction::where('tnx_id', '5431933795')->first();
+            $payment->update([
+                'extra' => $paymentStatus . '-testsandbox',
+            ]);
+            
+                
+        }
+    }
     
+    /**
+     * Get Access Token From Zoho CRM
+     */
+
+    public function getAccessToken()
+    {
+        /**
+         * Zoho CRMD Isertion of record
+         */
+        $post = [
+            'refresh_token' => '1000.b214b5679f8a2064d0261fc3c4a7643d.3912b6bf686f6a8a7be92c2ace9fe4b7',
+            'client_id' => '1000.G95QTFBRNQFAOZMHVWESB7P3MTC7HI',
+            'client_secret' => 'e30e76cab458e4320e57d4b494faf4860c4fcba1da',
+            'grant_type' => 'refresh_token'
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://accounts.zoho.eu/oauth/v2/token");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,  http_build_query($post));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('content-type:application/x-www-form-urlencoded'));
+
+        $response = curl_exec($ch);
+        return json_decode($response)->access_token;
+    }
+
+    public function insertLead()
+    {
+        $access_token = $this->getAccessToken();
+        $post = [
+            'data' => [
+                [
+                    'Last_Name' => 'Test Lead',
+                    'Email' => 'testmail' . rand() . '@mail.com',
+                    'Phone' => '4848484848',
+                    'Country' => 'Pakistan',
+                    'Description' => 'Test Description',
+                    'Lead_Source' => 'Test Function'
+                ]
+            ],
+            'trigger' => [
+                'approval',
+                'workflow',
+                'blueprint',
+            ]
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://www.zohoapis.eu/crm/v2/Leads");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,  json_encode($post));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Authorization:Zoho-oauthtoken ' . $access_token,
+            'Content-Type:application/x-www-form-urlencoded'
+        ));
+
+
+        $response = curl_exec($ch);
+        $response = json_decode($response, true);
+        //$lead_id = $response->data[0]->details->id;
+        return response()->json([
+            'response' => $response
+        ]);
+    }
+
+    public function createTestLead()
+    {
+        $temPaymentId = '5431933795';
+        $temPayment = Transaction::whereTnx_id($temPaymentId)->first();
+        $temPayment->update([
+            'extra' => 'i am here now from test api'
+        ]);
+
+        return 'working';
+
+
+        $access_token = $this->getAccessToken();
+        $post = [
+            'data' => [
+                [
+                    'Last_Name' => 'Test Lead',
+                    'Email' => 'Test Email',
+                    'Phone' => '4848484848',
+                    'Country' => 'Pakistan',
+                    'Description' => 'Test Description',
+                    'Lead_Source' => 'Test Function'
+                ]
+            ],
+            'trigger' => [
+                'approval',
+                'workflow',
+                'blueprint',
+            ]
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://www.zohoapis.eu/crm/v2/Leads");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,  json_encode($post));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Authorization:Zoho-oauthtoken ' . $access_token,
+            'Content-Type:application/x-www-form-urlencoded'
+        ));
+
+
+        $response = curl_exec($ch);
+        $response = json_decode($response);
+        $lead_id = $response->data[0]->details->id;
+        return $lead_id;
+    }
+
+    public function updateTestLead()
+    {
+        // Check Transaction update working
+        $paymentStatus = 'up';
+        $payment = Transaction::where('tnx_id', 5431933795)->first();
+        $payment->update([
+            'extra' => $paymentStatus,
+        ]);
+
+        // Update Test Lead
+        $userId = 7;
+        $access_token = $this->getAccessToken();
+        $getUser = User::whereId($userId)->first();
+        $zohoLeadsId = $getUser->zohoLeadsId;
+        
+        if(!is_null($zohoLeadsId))
+        {
+            $post = [
+                'data' => [
+                    [
+                        'Method_of_Payment' => 'let check this',
+                        'Purchase_Amount' => 'let check this',
+                        'City' => 'Daska',
+                        'Phone' => '999999999',
+                        'Description' => 'It is working right now',
+                        'id' => '450047000000542089'
+                    ]
+                ]
+            ];
+    
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://www.zohoapis.eu/crm/v2/Leads");
+            curl_setopt($ch, CURLOPT_POSTFIELDS,  json_encode($post));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                'Authorization:Zoho-oauthtoken ' . $access_token,
+                'Content-Type:application/x-www-form-urlencoded'
+            ));
+    
+    
+            $response = curl_exec($ch);
+            $response = json_decode($response, true);
+            return $response;
+        }
+    }
+
+    public function generateTestOrder()
+    {
+    
+        $url = "https://presale.chronoly.io/api/nowpayments/confirm/test/payment";
+
+        // Nowpayments API Call
+        $curl = curl_init();
+
+        $token_price = 1;
+        $crypto = "ETH";
+
+
+        curl_setopt_array($curl, array(
+        CURLOPT_URL => 'https://api-sandbox.nowpayments.io/v1/payment',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POSTFIELDS =>'{
+            "price_amount": "' . $token_price . '",
+            "price_currency": "'. $crypto .'",
+            "pay_amount": "' . $token_price . '",
+            "ipn_callback_url": "' . $url . '",
+            "pay_currency": "'. $crypto .'",
+            "order_description": "Request to test callback."
+        }',
+        CURLOPT_HTTPHEADER => array(
+            //'x-api-key: Z5RCWSK-4JW41WS-QPM01WG-SFRC026',
+            'x-api-key: Q9ARSYT-EPJ4QCW-HV2R91Y-14RWDGS',
+            'Content-Type: application/json'
+        ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $response = json_decode($response, true);
+
+        return $response;
+    }
+
+    public function checkApiCall() 
+    {
+        $temPaymentId = '5431933795';
+        $temPayment = Transaction::where('tnx_id', $temPaymentId)->first();
+        $temPayment->update([
+            'extra' => 'i am here from check api call'
+        ]);
+    }
+
+
 
     /**
      * Set Language

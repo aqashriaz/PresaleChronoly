@@ -120,7 +120,7 @@ class TokenController extends Controller
             $json = json_decode($dataForCall); 
             $exrate = 1/ $json->price;
             
-            $currency_ratex = $exrate / 50;
+            $currency_ratex = $exrate / 100;
             $totalCrypto = number_format($exrate * $amount, 6);
           
             
@@ -132,14 +132,14 @@ class TokenController extends Controller
                 $crypto = "USDT";
             }
             
-            $totalCrypto = to_num(token_price($amount, $crypto) * 50);    
+            $totalCrypto = to_num(token_price($amount, $crypto) * 100);    
             $currency_ratex = Setting::exchange_rate($tc->get_current_price(), $crypto);
          }
          
          
          $min_token = active_stage()->min_purchase;
         
-         $token = (float) $amount * 50;    
+         $token = (float) $amount * 100;    
              
          return response()->json([
             'cryptoPrice' =>$totalCrypto,
@@ -152,7 +152,7 @@ class TokenController extends Controller
             //'amount' => $tc->calc_token($token, 'price')->$crypto, max_decimal(),
             'amount' => $totalCrypto,
             'token' => round($token, min_decimal()),
-            'min_token' => $min_token,
+            'min_token' => $min_token
         ]);
      }
 
@@ -280,13 +280,15 @@ class TokenController extends Controller
             $crypto = "USDTTRC20";
         }
 
-        $url = "https://presale.chronoly.io/api/nowpayments/confirm/payment";
-        //$url = "http://chronoly.testingserv.xyz/api/nowpayments/confirm/payment/presale";
-
+        //$url = "https://presale.chronoly.io/api/nowpayments/confirm/payment";
+        $url = "https://presale.chronoly.io/api/test-api-call";
+        
+        // Nowpayments API Call
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
         CURLOPT_URL => 'https://api.nowpayments.io/v1/payment',
+        //CURLOPT_URL => 'https://api-sandbox.nowpayments.io/v1/payment',
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,
@@ -304,6 +306,7 @@ class TokenController extends Controller
         }',
         CURLOPT_HTTPHEADER => array(
             'x-api-key: MGR8GQP-66VMMS8-J8XMH3D-W031HD7',
+            //Sandbox'x-api-key: Q9ARSYT-EPJ4QCW-HV2R91Y-14RWDGS',
             'Content-Type: application/json'
         ),
         ));

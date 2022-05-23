@@ -12,6 +12,15 @@
                     <h4 class="card-title">{{ ucfirst($is_page) }} Transactions</h4>
                     <div class="card-opt">
                         <ul class="btn-grp btn-grp-block guttar-20px">
+                            {{-- <li>
+                                <a href="#" class="btn btn-sm btn-auto btn-primary">
+                                    <em class="fas fa-plus-circle"></em><span>Approve <span class="d-none d-sm-inline-block">Transactions</span></span>
+                                </a>
+                            </li> --}}
+                            {{-- <li>
+                                <a href="#" onclick="approveTransactions()">-</a>
+                            </li> --}}
+                            
                             <li>
                                 <a href="#" class="btn btn-sm btn-auto btn-primary" data-toggle="modal" data-target="#addTnx">
                                     <em class="fas fa-plus-circle"></em><span>Add <span class="d-none d-sm-inline-block">Tokens</span></span>
@@ -482,7 +491,7 @@
                                 <div class="input-wrap">
                                     <select name="user" required="" class="select-block select-bordered" data-dd-class="search-on">
                                         @forelse($users as $user)
-                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                        <option value="{{ $user->id }}">{{ $user->name }} ( {{ $user->id }} )</option> 
                                         @empty
                                         <option value="">No user found</option>
                                         @endif
@@ -583,3 +592,24 @@
 {{-- Modal End --}}
 
 @endsection
+
+{{-- @push('header')
+<script>
+
+    function approveTransactions() {
+
+        $.ajax({
+            url: "/admin/ajax/approve/transactions/auto",
+            type: "GET",
+            dataType: 'JSON',
+            success: function(result) {
+                console.log(result.res)
+            },
+            error: function(xhr, status, error) {
+                console.log(xhr.responseText);
+            }
+        });
+    }
+
+</script>
+@endpush --}}

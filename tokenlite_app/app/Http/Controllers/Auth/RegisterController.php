@@ -111,7 +111,9 @@ class RegisterController extends Controller
                     'Email' => $request->email,
                     'Phone' => $request->mobile,
                     'Country' => $request->nationality,
-                    'Description' => 'Currency: ' . $request->crypto_select . ', Token buy: $' . $request->token_buy,
+                    //'Description' => 'Currency: ' . $request->crypto_select . ', Token buy: $' . $request->token_buy,
+                    'Method_of_Payment' => $request->crypto_select,
+                    'Purchase_Amount' => $request->token_buy,
                     'Lead_Source' => 'Website Registration'
                 ]
             ],
@@ -135,7 +137,13 @@ class RegisterController extends Controller
 
 
         $response = curl_exec($ch);
+        $response = json_decode($response);
+        $lead_id = $response->data[0]->details->id;
 
+        User::whereId($user->id)->update([
+            'zohoLeadsId' => $lead_id
+        ]);
+        
         $this->guard()->login($user);
 
         //return $this->registered($request, $user) ? : redirect($this->redirectPath());

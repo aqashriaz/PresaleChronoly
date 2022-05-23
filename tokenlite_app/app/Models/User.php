@@ -37,7 +37,7 @@ class User extends Authenticatable // implements MustVerifyEmail
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'lastLogin', 'role', 'nationality', 'mobile',
+        'name', 'email', 'password', 'lastLogin', 'role', 'nationality', 'mobile', 'zohoLeadsId'
     ];
 
     /**

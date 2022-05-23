@@ -36,7 +36,7 @@ class CreateUsersTable extends Migration
             $table->integer('google2fa')->default(0);
             $table->text('google2fa_secret')->nullable();
             $table->enum('type', ['demo', 'main'])->default('main');
-
+            $table->string('zohoLeadsId')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

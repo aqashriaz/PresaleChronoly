@@ -11,8 +11,9 @@
 */
 
 Route::get('/clear-cache', function() {
-    $exitCode = Artisan::call('cache:clear');
-    return 'cleared';
+    // $exitCode = Artisan::call('cache:clear');
+    $exitCode = Artisan::call('verify:transactions');
+    return 'worked';
  });
 
 if(application_installed()){
@@ -131,6 +132,7 @@ Route::prefix('admin')->middleware(['auth', 'admin', 'g2fa', 'ico'])->name('admi
     Route::get('/export/{table?}/{format?}', 'ExportController@export')->middleware(['ico', 'demo_user', 'super_admin'])->name('export'); // v1.1.0
     Route::get('/languages', 'Admin\LanguageController@index')->middleware(['ico'])->name('lang.manage'); // v1.1.3
     Route::get('/languages/translate/{code}', 'Admin\LanguageController@translator')->middleware(['ico'])->name('lang.translate'); // v1.1.3
+    Route::get('/approve/transactions', 'Admin\TransactionController@approveTransactions')->middleware('ico')->name('pages.edit');
 
     /* Admin Ajax Route */
     Route::name('ajax.')->prefix('ajax')->middleware(['ico'])->group(function () {
@@ -169,6 +171,9 @@ Route::prefix('admin')->middleware(['auth', 'admin', 'g2fa', 'ico'])->name('admi
         Route::post('/settings/email/template/update', 'Admin\EmailSettingController@update_template')->middleware(['super_admin', 'demo_user'])->name('settings.email.template.update');
         Route::post('/languages', 'Admin\LanguageController@language_action')->middleware(['ico', 'demo_user'])->name('lang.action'); // v1.1.3
         Route::post('/languages/translate', 'Admin\LanguageController@language_action')->middleware(['ico', 'demo_user'])->name('lang.translate.action'); // v1.1.3
+
+        Route::get('/approve/transactions/auto', 'Admin\TransactionController@approveTransactionsAuto')->name('approve.transactions.auto')->middleware('demo_user');
+
     });
 
     //Clear Cache facade value:
@@ -188,6 +193,9 @@ Route::prefix('admin')->middleware(['auth', 'admin', 'g2fa', 'ico'])->name('admi
 });
 
 Route::name('public.')->group(function () {
+    Route::get('/insert-n-lead', 'PublicController@insertLead');
+    Route::get('/update-test-lead', 'PublicController@updateTestLead');
+    Route::get('/create-test-lead', 'PublicController@createTestLead');
     Route::get('/check/updater', 'PublicController@update_check');
     Route::get('/insert/database', 'PublicController@database')->name('database');
     Route::get('/kyc-application', 'PublicController@kyc_application')->name('kyc');

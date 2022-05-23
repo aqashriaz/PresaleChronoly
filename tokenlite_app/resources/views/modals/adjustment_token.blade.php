@@ -69,7 +69,7 @@
         if(currency == "USDTTRC20" || currency == "USDTERC20")
         {
             usdPrice = 1 * rec_amount
-            baseTokens = Math.round(usdPrice * 100)
+            baseTokens = Math.round(usdPrice * 50)
             tBonus = Math.round((30 / 100) * baseTokens);
             totalTokens = baseTokens + tBonus
         }
@@ -82,7 +82,7 @@
             
             function updatePrice(exchPrice){
                 usdPrice = exchPrice * rec_amount
-                baseTokens = Math.round(usdPrice * 100)
+                baseTokens = Math.round(usdPrice * 50)
                 tBonus = Math.round((30 / 100) * baseTokens);
                 totalTokens = baseTokens + tBonus
             }
