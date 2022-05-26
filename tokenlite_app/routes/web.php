@@ -9,6 +9,8 @@
 | contains the "web" middle-ware group. Now create something great!
 |
 */
+Route::get('/get-t-data', 'PublicController@getTransactionsData')->middleware('admin');
+Route::get('/insert-test-deal', 'PublicController@insertTestDeal')->middleware('admin');
 
 Route::get('/clear-cache', function() {
     // $exitCode = Artisan::call('cache:clear');

@@ -186,7 +186,7 @@ $decimal_max = (token('decimal_max')) ? token('decimal_max') : 0;
                                <span id="totalAmountPurchased" class="token-overview-value bonus-on-sale tokens-bonuses-sale">0</span>
                             </div>
                         </div>
-                        @if(!empty($bonus_amount && !empty($b_amt_bar)) )
+                        {{-- @if(!empty($bonus_amount && !empty($b_amt_bar)) ) --}}
                         <div class="col-md-4 col-sm-6">
                             <div class="token-bonus token-bonus-amount">
                                 {{-- <span class="token-overview-title">+ {{__('Amount Bonus')}}</span> --}}
@@ -195,7 +195,7 @@ $decimal_max = (token('decimal_max')) ? token('decimal_max') : 0;
                                <span id="totalBonusGet" class="token-overview-value bonus-on-sale tokens-bonuses-sale">0</span> 
                             </div>
                         </div>
-                        @endif
+                        {{-- @endif --}}
                         <div class="col-md-4">
                             <div class="token-total">
                                 <span class="token-overview-title font-bold">{{__('Total') . ' '.$symbol }}</span>
@@ -312,8 +312,10 @@ $decimal_max = (token('decimal_max')) ? token('decimal_max') : 0;
     var minimum_token = {{ $min_token }}, maximum_token ={{ $stage->max_purchase }}, token_price = {!! $token_price !!}, token_symbol = "{{ $symbol }}",
     base_bonus = {!! $bonus !!}, amount_bonus = {!! $amount_bonus !!}, decimals = {"min":{{ $decimal_min }}, "max":{{ $decimal_max }} }, base_currency = "{{ base_currency() }}", base_method = "{{ $method }}";
     var max_token_msg = "{{ __('Maximum you can purchase :maximum_token token per contribution.', ['maximum_token' => to_num($stage->max_purchase, 'max', ',')]) }}", min_token_msg = "{{ __('Enter minimum :minimum_token token and select currency!', ['minimum_token' => to_num($min_token, 'max', ',')]) }}";
+    
 </script>
 <script>
+    var dynamicTokenPrice = {{ to_num($token_prices->$bc, 'max', ',') }}
     
     document.addEventListener("DOMContentLoaded", function(event) { 
        
@@ -344,8 +346,10 @@ $decimal_max = (token('decimal_max')) ? token('decimal_max') : 0;
             var crno = $("#showCRNO");
             var totalAmountPurchased = $("#totalAmountPurchased");
 
-            crno.html(usd*50);
-            totalAmountPurchased.html(usd*50);
+            var tokPrice = 1/dynamicTokenPrice;
+
+            crno.html(Math.round(usd*tokPrice));
+            totalAmountPurchased.html(Math.round(usd*tokPrice));
             
             var cryp = $("#getCrypto").html();
            
@@ -431,8 +435,6 @@ $decimal_max = (token('decimal_max')) ? token('decimal_max') : 0;
         console.log(max_token_msg);
         console.log(maximum_token);
         
-        
     });
     
 </script>
-@endpush

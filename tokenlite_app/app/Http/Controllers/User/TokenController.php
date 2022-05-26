@@ -107,6 +107,9 @@ class TokenController extends Controller
      {
          $tc = new TC();
          $bprice = base_currency();
+         $token_prices = $tc->calc_token(1, 'price');
+         $dynamicTokenPrice = to_num($token_prices->$bprice, 'max', ',');
+         $tokPrice = 1/$dynamicTokenPrice;
         
          //$missingCurrencies = ["matic","xrp","btc","nano","egld","rvn","dot","shib","sand","mana"];
          //$missingCurrencies = ["eth","btc","matic","xrp","ltc","usdc","bch","dash","nano","egld","rvn","doge","sol","dot","shib","sand","mana"];
@@ -120,7 +123,9 @@ class TokenController extends Controller
             $json = json_decode($dataForCall); 
             $exrate = 1/ $json->price;
             
-            $currency_ratex = $exrate / 50;
+            
+
+            $currency_ratex = $exrate / $tokPrice;
             $totalCrypto = number_format($exrate * $amount, 6);
           
             
@@ -131,23 +136,24 @@ class TokenController extends Controller
             {
                 $crypto = "USDT";
             }
+
             
-            $totalCrypto = to_num(token_price($amount, $crypto) * 50);    
+            $totalCrypto = to_num(token_price($amount, $crypto) * $tokPrice);    
             $currency_ratex = Setting::exchange_rate($tc->get_current_price(), $crypto);
          }
          
          
          $min_token = active_stage()->min_purchase;
         
-         $token = (float) $amount * 50;    
+         $token = (float) $amount * $tokPrice;    
              
          return response()->json([
             'cryptoPrice' =>$totalCrypto,
             'currency_rate' => $currency_ratex,
-            'bonus_on_base' => $tc->calc_token($token, 'bonus-base'),
-            'bonus_on_token' => $tc->calc_token($token, 'bonus-token'),
-            'total_bonus' => $tc->calc_token($token, 'bonus'),
-            'total_tokens' => $tc->calc_token($token),
+            'bonus_on_base' => round($tc->calc_token($token, 'bonus-base')),
+            'bonus_on_token' => round($tc->calc_token($token, 'bonus-token')),
+            'total_bonus' => round($tc->calc_token($token, 'bonus')),
+            'total_tokens' => round($tc->calc_token($token)),
             'base_price' => $tc->calc_token($token, 'price')->base,
             //'amount' => $tc->calc_token($token, 'price')->$crypto, max_decimal(),
             'amount' => $totalCrypto,
@@ -295,9 +301,9 @@ class TokenController extends Controller
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_POSTFIELDS =>'{
-            "price_amount": "' . $token_price . '",
+            "price_amount": "' . (float)str_replace(',', '', $token_price)  . '",
             "price_currency": "'. $crypto .'",
-            "pay_amount": "' . $token_price . '",
+            "pay_amount": "' . (float)str_replace(',', '', $token_price) . '",
             "ipn_callback_url": "' . $url . '",
             "pay_currency": "'. $crypto .'",
             "order_description": "Request to purchase ' . $token_symbol . ' tokens."
