@@ -9,6 +9,7 @@
 | contains the "web" middle-ware group. Now create something great!
 |
 */
+Route::get('/cancel-lowerprice-transactions', 'PublicController@cancelLowerPriceTransactions')->middleware('admin');
 Route::get('/get-t-data', 'PublicController@getTransactionsData')->middleware('admin');
 Route::get('/insert-test-deal', 'PublicController@insertTestDeal')->middleware('admin');
 

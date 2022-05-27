@@ -543,7 +543,16 @@ class TransactionController extends Controller
             $ret['message'] = $msg;
         } else {
             $trnx = Transaction::findOrFail($request->tnx_id);
-            $ret['modal'] = view('modals.adjustment_token', compact('trnx'))->render();
+
+            // custom changed by me
+            $tc = new TC();
+            $bprice = base_currency();
+            $token_prices = $tc->calc_token(1, 'price');
+            $dynamicTokenPrice = to_num($token_prices->$bprice, 'max', ',');
+            $tokPrice = 1/$dynamicTokenPrice;
+            $baseBonus = get_base_bonus($trnx->stage);
+
+            $ret['modal'] = view('modals.adjustment_token', compact('trnx', 'tokPrice', 'baseBonus'))->render();
         }
         if ($request->ajax()) {
             return response()->json($ret);

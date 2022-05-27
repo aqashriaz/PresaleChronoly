@@ -129,7 +129,7 @@ $decimal_max = (token('decimal_max')) ? token('decimal_max') : 0;
                 
             
                 <div class="token-calc">
-                    <div class="token-pay-amount payment-get"><input class="input-bordered input-with-hint" required name="usdAm" type="number" id="amountInUSD" value="{{ $preferredAmount }}" min="10" autocomplete="off" ><div class="token-pay-currency"><span class="input-hint input-hint-sap payment-get-cur payment-cal-cur ucap">{{ $bc }}</span></div></div>
+                    <div class="token-pay-amount payment-get"><input class="input-bordered input-with-hint" required name="usdAm" type="number" id="amountInUSD" value="{{ $preferredAmount }}" min="10" max="150000" autocomplete="off" ><div class="token-pay-currency"><span class="input-hint input-hint-sap payment-get-cur payment-cal-cur ucap">{{ $bc }}</span></div></div>
                     <div class="token-received token-received-alt"><div class="token-eq-sign">=</div><div class="token-received-amount"><h5 id="showCrypto" class="token-amount " >0.00</h5><div id="getCrypto" class="token-symbol ucap">--</div></div></div>
                     <div class="token-received token-received-alt"><div class="token-eq-sign">=</div><div class="token-received-amount"><h5 id="showCRNO" class="token-amount " >0.00</h5><div class="token-symbol ucap">CRNO</div></div></div>
                 </div>

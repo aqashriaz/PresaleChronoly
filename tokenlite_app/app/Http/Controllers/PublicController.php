@@ -31,6 +31,28 @@ use App\Helpers\ReferralHelper;
 
 class PublicController extends Controller
 {
+    public function cancelLowerPriceTransactions()
+    {
+        return 'not available';
+        $transactions = Transaction::where('id', '<', 1894)->where('status', 'pending')->get();
+        $output = '';
+        foreach ($transactions as $trnx ) {
+
+            if(in_array($trnx->status, ['onhold', 'pending'])){
+                $trnx->status = 'canceled';
+                $trnx->checked_by = json_encode(['name' => Auth::user()->name, 'id' => Auth::id()]);
+                $trnx->checked_time = date('Y-m-d H:i:s');
+                $trnx->save();
+                IcoStage::token_add_to_account($trnx, 'sub');
+               
+            }
+
+        
+        }
+        // dd($transactions);
+        return 'all cancelled';
+    }
+
     public function getTransactionsData()
     {
         $users = User::all();
@@ -130,7 +152,8 @@ class PublicController extends Controller
                         [
                             'Deal_Name' => $usr->name,
                             'Amount' => (float) $payment->base_amount, 
-                            'Closing_Date' => Carbon::now()->format('Y-m-d')
+                            'Closing_Date' => Carbon::now()->format('Y-m-d'),
+                            'Stage' => 'Closed won'
                         ]
                     ]
                 ];
@@ -151,6 +174,28 @@ class PublicController extends Controller
 
             
             }
+
+            if($paymentStatus == 'expired')
+            {
+                if(in_array($trnx->status, ['onhold', 'pending'])){
+                    $trnx->status = 'canceled';
+                    $trnx->checked_by = json_encode(['name' => Auth::user()->name, 'id' => Auth::id()]);
+                    $trnx->checked_time = date('Y-m-d H:i:s');
+                    $trnx->save();
+                    IcoStage::token_add_to_account($trnx, 'sub');
+                    
+                    try {
+                        $trnx->tnxUser->notify((new TnxStatus($trnx, 'rejected-user')));
+                        $ret['msg'] = 'success';
+                        $ret['message'] = __('messages.trnx.admin.canceled');
+                    } catch (\Exception $e) {
+                        $ret['errors'] = $e->getMessage();
+                        $ret['msg'] = 'warning';
+                        $ret['message'] = __('messages.trnx.admin.canceled').' '.__('messages.email.failed');
+                    }
+                }
+            }
+
                 
         }
     }

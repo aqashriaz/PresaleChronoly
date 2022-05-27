@@ -43,7 +43,9 @@
 
 <script type="text/javascript">
     (function($) {
-
+    var tokPrice = {{ $tokPrice }}
+    var baseBonus = {{ $baseBonus }}
+    
     //adjust and calculate on field
     var adjust_form = $('#adjust_token_cal'), receive_amount = $('#receive_amount'), adjust_token = $('#total_tokens'), $chk = adjust_form.find('.chk_adjust'),
         rec_amount = adjust_form.find(receive_amount).val();
@@ -61,6 +63,9 @@
         old_amount = {!! $trnx->total_tokens !!} - bonus_on_token -bonus_on_base,
         all_currency_rate = {!! $trnx->all_currency_rate !!};
 
+        // bonusSum = bonus_on_base + bonus_on_token;
+        // console.log(bonusSum)
+
         if(currency == "BNBBSC")
         {
             currency = "BNB"
@@ -68,9 +73,10 @@
 
         if(currency == "USDTTRC20" || currency == "USDTERC20")
         {
+
             usdPrice = 1 * rec_amount
-            baseTokens = Math.round(usdPrice * 50)
-            tBonus = Math.round((30 / 100) * baseTokens);
+            baseTokens = Math.round(usdPrice * tokPrice)
+            tBonus = Math.round((baseBonus / 100) * baseTokens);
             totalTokens = baseTokens + tBonus
         }
         else
@@ -82,8 +88,8 @@
             
             function updatePrice(exchPrice){
                 usdPrice = exchPrice * rec_amount
-                baseTokens = Math.round(usdPrice * 50)
-                tBonus = Math.round((30 / 100) * baseTokens);
+                baseTokens = Math.round(usdPrice * tokPrice)
+                tBonus = Math.round((baseBonus / 100) * baseTokens);
                 totalTokens = baseTokens + tBonus
             }
         }
